@@ -1,5 +1,12 @@
 import subprocess
 import json
+from datetime import date
+from pathlib import Path
+
+
+def exec_shell_command(command: str|list[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+
 
 class Config:
     DOCUMENT_ROOT = 'document_root'
@@ -17,6 +24,12 @@ class Config:
     def get(self, key: str, default = None) -> str:
         return self.__config.get(key, default)
     
+    def make_today_desc_dir(self) -> None:
+        desc_dir = self.get(self.BACKUP_DESC)
+        today_desc = f'{desc_dir}/{date.today().strftime('%d-%m-%Y')}'
+        Path(today_desc).mkdir(parents=True, exist_ok=True)
+        self.__config[self.BACKUP_DESC] = today_desc
+    
     def __validate(self) -> None:
         config_keys = self.__config.keys()
         for key in self.REQUIRED:
@@ -29,7 +42,7 @@ class FileBackup:
         self.__config = config
     
     def execute(self) -> subprocess.CompletedProcess:
-        return subprocess.run(self.__backup_command(), shell=True, stdout=subprocess.PIPE)
+        return exec_shell_command(self.__backup_command())
     
     def __backup_command(self) -> str:
         return 'rsync ${DEBUG:+-nv} -arR --files-from=%s %s %s' % (
@@ -67,6 +80,7 @@ class DbBackup:
 
 def main():
     config = Config()
+    config.make_today_desc_dir()
     
     result = FileBackup(config).execute()
     print(result.stdout)
