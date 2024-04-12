@@ -3,6 +3,7 @@
 ## Requirements
 + linux tools: rsync
 + python >= 3
++ mysql, postgres, mongodb, sqlite3 extensions if you want to backup each type of database
   
 ## Usage
 
