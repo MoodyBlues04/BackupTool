@@ -79,16 +79,25 @@ class DbBackup:
         handlers = {
             self.MYSQL: self.__backup_mysql,
             self.MONGODB: lambda el: print(el),
-            self.POSTGRES: lambda el: print(el),
+            self.POSTGRES: self.__backup_postgress,
             self.SQLITE: lambda el: print(el),
         }
         return handlers[connection_type]
     
     def __backup_mysql(self, db_conf: dict) -> subprocess.CompletedProcess:
         password_s = '-p' + db_conf['password'] if db_conf['password'] else ''
-        desc_file = self.__config.get(Config.BACKUP_DESC) + '/mysql-dump.sql'
+        desc_file = self.__desc_sql_dump('sql')
         command = f"mysqldump -u{db_conf['username']} {password_s} {db_conf['database']} > {desc_file}"
         return exec_shell_command(command)
+    
+    def __backup_postgress(self, db_conf: dict) -> subprocess.CompletedProcess:
+        password_s = f"PGPASSWORD='{db_conf['password']}'" if db_conf['password'] else ''
+        desc_file = self.__desc_sql_dump('pgsql')
+        command = f"{password_s} pg_dump -U {db_conf['username']} -h {db_conf['host']} {db_conf['database']} > {desc_file}"
+        return exec_shell_command(command)
+    
+    def __desc_sql_dump(self, type: str) -> str:
+        return self.__config.get(Config.BACKUP_DESC) + f'/{type}-dump.{type}'
 
 
 def main():
