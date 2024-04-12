@@ -26,7 +26,7 @@ class Config:
     
     def make_today_desc_dir(self) -> None:
         desc_dir = self.get(self.BACKUP_DESC)
-        today_desc = f'{desc_dir}/{date.today().strftime('%d-%m-%Y')}'
+        today_desc = f"{desc_dir}/{date.today().strftime('%d-%m-%Y')}"
         Path(today_desc).mkdir(parents=True, exist_ok=True)
         self.__config[self.BACKUP_DESC] = today_desc
     
