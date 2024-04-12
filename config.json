@@ -26,6 +26,10 @@
             "database": "test",
             "username": "",
             "password": ""
+        },
+        {
+            "connection": "sqlite3",
+            "path": "test.sq3"
         }
     ]
 }

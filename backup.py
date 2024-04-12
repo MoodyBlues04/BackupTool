@@ -59,7 +59,7 @@ class DbBackup:
     MYSQL = 'mysql'
     MONGODB = 'mongodb'
     POSTGRES = 'postgres'
-    SQLITE = 'sqlite'
+    SQLITE = 'sqlite3'
     
     CONNECTION_TYPES = {MYSQL, MONGODB, POSTGRES, SQLITE}
     
@@ -80,7 +80,7 @@ class DbBackup:
             self.MYSQL: self.__backup_mysql,
             self.MONGODB: self.__backup_mongodb,
             self.POSTGRES: self.__backup_postgres,
-            self.SQLITE: lambda el: print(el),
+            self.SQLITE: self.__backup_sqlite,
         }
         return handlers[connection_type]
     
@@ -112,6 +112,12 @@ class DbBackup:
         
         command = f"mongodump --host={db_conf['host']} --port={db_conf['port']} {auth_s} -o '{desc_dir}'"
         
+        return exec_shell_command(command)
+    
+    def __backup_sqlite(self, db_conf: dict) -> subprocess.CompletedProcess:
+        desc_file = self.__desc_sql_dump('sq3') + '.bak'
+        command = f"sqlite3 {db_conf['path']} '.backup {desc_file}'"
+    
         return exec_shell_command(command)
     
     def __desc_sql_dump(self, type: str) -> str:
