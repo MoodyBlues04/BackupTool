@@ -2,7 +2,7 @@ import subprocess
 import json
 
 def get_config() -> dict:
-    with open('congig.json') as config_file:
+    with open('config.json') as config_file:
         return json.load(config_file)
 
 
