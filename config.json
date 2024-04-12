@@ -1,5 +1,16 @@
 {
     "document_root": "/var/www/BackupTool/",
-    "backup_dest": "./backup",
-    "backup_src_file": "./dir-list.txt"
+    "backup_desc": "./backup",
+    "backup_src_file": "./dir-list.txt",
+    "database_backup": [
+        {
+            "connection": "mysql",
+            "host": "127.0.0.1",
+            "port": 3306,
+            "database": "test",
+            "username": "root",
+            "password": "",
+            "backup_desc": ""
+        }
+    ]
 }
