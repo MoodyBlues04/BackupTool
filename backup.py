@@ -7,6 +7,9 @@ from pathlib import Path
 def exec_shell_command(command: str|list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(command, shell=True, stdout=subprocess.PIPE)
 
+def report(subprocess: subprocess.CompletedProcess) -> None:
+    print(f"Subprocess completed. Args: {subprocess.args}, code: {subprocess.returncode}, stdout: {subprocess.stdout}")
+
 
 class Config:
     DOCUMENT_ROOT = 'document_root'
@@ -70,7 +73,7 @@ class DbBackup:
                 raise Exception(f'Invalid connection type: `{connection_type}`')
             
             handler = self.__get_backup_handler(connection_type)
-            handler(db_conf)
+            report(handler(db_conf))
     
     def __get_backup_handler(self, connection_type: str):
         handlers = {
@@ -96,12 +99,9 @@ def main():
     config.make_today_desc_dir()
     
     result = FileBackup(config).execute()
-    print(result.stdout)
-    print(result.returncode)
+    report(result)
     
-    result = DbBackup(config).execute()
-    print(result.stdout)
-    print(result.returncode)
+    DbBackup(config).execute()
     
 
 if __name__ == '__main__':
