@@ -42,7 +42,6 @@ class FileBackup:
         self.__config = config
     
     def execute(self) -> subprocess.CompletedProcess:
-        print(self.__backup_command())
         return exec_shell_command(self.__backup_command())
     
     def __backup_command(self) -> str:
@@ -59,12 +58,7 @@ class DbBackup:
     POSTGRES = 'postgres'
     SQLITE = 'sqlite'
     
-    HANDLERS = {
-        MYSQL: lambda el: print(el),
-        MONGODB: lambda el: print(el),
-        POSTGRES: lambda el: print(el),
-        SQLITE: lambda el: print(el),
-    }
+    CONNECTION_TYPES = {MYSQL, MONGODB, POSTGRES, SQLITE}
     
     def __init__(self, config: Config) -> None:
         self.__config = config
@@ -72,11 +66,29 @@ class DbBackup:
     def execute(self) -> subprocess.CompletedProcess:
         for db_conf in self.__config.get(Config.DB_BACKUP):
             connection_type = db_conf.get('connection')
-            if connection_type not in self.HANDLERS.keys():
+            if connection_type not in self.CONNECTION_TYPES:
                 raise Exception(f'Invalid connection type: `{connection_type}`')
             
-            handler = self.HANDLERS[connection_type]
+            handler = self.__get_backup_handler(connection_type)
             handler(db_conf)
+    
+    def __get_backup_handler(self, connection_type: str):
+        handlers = {
+            self.MYSQL: self.__backup_mysql,
+            self.MONGODB: lambda el: print(el),
+            self.POSTGRES: lambda el: print(el),
+            self.SQLITE: lambda el: print(el),
+        }
+        return handlers[connection_type]
+    
+    def __backup_mysql(self, db_conf: dict) -> subprocess.CompletedProcess:
+        command = 'mysqldump -u %s –p %s %s > %s' % (
+            db_conf['username'],
+            db_conf['password'],
+            db_conf['database'],
+            self.__config.get(Config.BACKUP_DESC) + '/mysql-dump.sql'
+        )
+        return exec_shell_command(command)
 
 
 def main():
