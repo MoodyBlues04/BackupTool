@@ -2,7 +2,7 @@
 
 ## Requirements
 + linux tools: rsync
-+ python >= 3
++ python >= 3Ba
 + mysql, postgres, mongodb, sqlite3 extensions if you want to backup each type of database
   
 ## Usage
@@ -15,3 +15,6 @@
     Fill file with dir list to backup (from punctum 1.3)
 2. Db backup
    Fill ```config.json``` ```database_backup``` field with data as specified in its example
+
+When ```config.json``` is fully set up, just run ```python3 backup.py``` to backup all project,
+your files and databases will be stored in ```/<chosen_dir>/<current_date>``` directory
