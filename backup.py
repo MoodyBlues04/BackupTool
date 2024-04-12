@@ -85,7 +85,7 @@ class DbBackup:
         return handlers[connection_type]
     
     def __backup_mysql(self, db_conf: dict) -> subprocess.CompletedProcess:
-        command = 'mysqldump -u %s –p "%s" %s > %s' % (
+        command = 'mysqldump -u %s –-password="%s" %s > %s' % (
             db_conf['username'],
             db_conf['password'],
             db_conf['database'],
