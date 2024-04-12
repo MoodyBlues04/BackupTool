@@ -78,22 +78,40 @@ class DbBackup:
     def __get_backup_handler(self, connection_type: str):
         handlers = {
             self.MYSQL: self.__backup_mysql,
-            self.MONGODB: lambda el: print(el),
-            self.POSTGRES: self.__backup_postgress,
+            self.MONGODB: self.__backup_mongodb,
+            self.POSTGRES: self.__backup_postgres,
             self.SQLITE: lambda el: print(el),
         }
         return handlers[connection_type]
     
     def __backup_mysql(self, db_conf: dict) -> subprocess.CompletedProcess:
-        password_s = '-p' + db_conf['password'] if db_conf['password'] else ''
+        password_s = ''
+        if db_conf['password']:
+            password_s = '-p' + db_conf['password']
         desc_file = self.__desc_sql_dump('sql')
+        
         command = f"mysqldump -u{db_conf['username']} {password_s} {db_conf['database']} > {desc_file}"
+        
         return exec_shell_command(command)
     
-    def __backup_postgress(self, db_conf: dict) -> subprocess.CompletedProcess:
-        password_s = f"PGPASSWORD='{db_conf['password']}'" if db_conf['password'] else ''
+    def __backup_postgres(self, db_conf: dict) -> subprocess.CompletedProcess:
+        password_s = ''
+        if db_conf['password']:
+            password_s = f"PGPASSWORD='{db_conf['password']}'"
         desc_file = self.__desc_sql_dump('pgsql')
+        
         command = f"{password_s} pg_dump -U {db_conf['username']} -h {db_conf['host']} {db_conf['database']} > {desc_file}"
+        
+        return exec_shell_command(command)
+    
+    def __backup_mongodb(self, db_conf: dict) -> subprocess.CompletedProcess:
+        auth_s = ''
+        if db_conf.get('auth_table'):
+            auth_s = f"--authenticationDatabase='{db_conf['auth_table']}' -u='{db_conf['username']}' -p='{db_conf['password']}'"
+        desc_dir =  self.__config.get(Config.BACKUP_DESC) + '/mongodb'
+        
+        command = f"mongodump --host={db_conf['host']} --port={db_conf['port']} {auth_s} -o '{desc_dir}'"
+        
         return exec_shell_command(command)
     
     def __desc_sql_dump(self, type: str) -> str:
