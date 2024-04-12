@@ -42,6 +42,7 @@ class FileBackup:
         self.__config = config
     
     def execute(self) -> subprocess.CompletedProcess:
+        print(self.__backup_command())
         return exec_shell_command(self.__backup_command())
     
     def __backup_command(self) -> str:
