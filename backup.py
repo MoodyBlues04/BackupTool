@@ -5,8 +5,9 @@ class Config:
     DOCUMENT_ROOT = 'document_root'
     BACKUP_SRC = 'backup_src_file'
     BACKUP_DESC = 'backup_desc'
+    DB_BACKUP = 'database_backup'
     
-    REQUIRED = {DOCUMENT_ROOT, BACKUP_SRC, BACKUP_DESC}
+    REQUIRED = {DOCUMENT_ROOT, BACKUP_SRC, BACKUP_DESC, DB_BACKUP}
     
     def __init__(self) -> None:
         config_file = open('config.json')
@@ -23,7 +24,7 @@ class Config:
                 raise Exception(f'Fill key `{key}` in config.json')
 
 
-class Rsync:
+class FileBackup:
     def __init__(self, config: Config) -> None:
         self.__config = config
     
@@ -38,13 +39,43 @@ class Rsync:
         )
 
 
+class DbBackup:
+    MYSQL = 'mysql'
+    MONGODB = 'mongodb'
+    POSTGRES = 'postgres'
+    SQLITE = 'sqlite'
+    
+    HANDLERS = {
+        MYSQL: lambda el: print(el),
+        MONGODB: lambda el: print(el),
+        POSTGRES: lambda el: print(el),
+        SQLITE: lambda el: print(el),
+    }
+    
+    def __init__(self, config: Config) -> None:
+        self.__config = config
+    
+    def execute(self) -> subprocess.CompletedProcess:
+        for db_conf in self.__config.get(Config.DB_BACKUP):
+            connection_type = db_conf.get('connection')
+            if connection_type not in self.HANDLERS.keys():
+                raise Exception(f'Invalid connection type: `{connection_type}`')
+            
+            handler = self.HANDLERS[connection_type]
+            handler(db_conf)
+
+
 def main():
     config = Config()
     
-    result = Rsync(config).execute()
+    result = FileBackup(config).execute()
     print(result.stdout)
     print(result.returncode)
-
+    
+    result = DbBackup(config).execute()
+    print(result.stdout)
+    print(result.returncode)
+    
 
 if __name__ == '__main__':
     main()
