@@ -1,8 +1,20 @@
 import subprocess
+import json
+
+def get_config() -> dict:
+    with open('congig.json') as config_file:
+        return json.load(config_file)
 
 
 def main():
-    command = 'rsync ${DEBUG:+-nv} -arR --files-from=./dir-list.txt /var/www/BackupTool/ ./test-desc/'
+    config = get_config()
+    
+    command = 'rsync ${DEBUG:+-nv} -arR --files-from=%s %s %s' % (
+        config['backup_src_file'],
+        config['document_root'],
+        config['backup_dest']
+    )
+    print(command)
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE)
     print(result.stdout)
     print(result.returncode)

@@ -1,5 +1,9 @@
 # Backup tool for linux projects
 
+## Requirements
++ linux tools: rsync
++ python >= 3
+  
 ## Usage
 
 #### FIles backup
