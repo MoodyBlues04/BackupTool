@@ -134,7 +134,7 @@ class GitBackup:
         if not self.__config.get(Config.GIT_BACKUP):
             return
         
-        source_filename = self.__config(Config.GIT_BACKUP)
+        source_filename = self.__config.get(Config.GIT_BACKUP)
         with open(source_filename) as source_file:
             project_list = source_file.readlines()
             print(project_list)
