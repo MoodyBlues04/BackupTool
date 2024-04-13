@@ -1,7 +1,11 @@
 {
     "document_root": "/var/www/BackupTool/",
     "backup_desc": "./backup",
+    
     "backup_src_file": "./dir-list.txt",
+    
+    "git_backup_src_file": "./dir-list.txt",
+    
     "database_backup": [
         {
             "connection": "mysql",

@@ -16,8 +16,9 @@ class Config:
     BACKUP_SRC = 'backup_src_file'
     BACKUP_DESC = 'backup_desc'
     DB_BACKUP = 'database_backup'
+    GIT_BACKUP = 'git_backup_src_file'
     
-    REQUIRED = {DOCUMENT_ROOT, BACKUP_SRC, BACKUP_DESC, DB_BACKUP}
+    REQUIRED = {DOCUMENT_ROOT, BACKUP_SRC, BACKUP_DESC, DB_BACKUP, GIT_BACKUP}
     
     def __init__(self) -> None:
         config_file = open('config.json')
@@ -44,8 +45,9 @@ class FileBackup:
     def __init__(self, config: Config) -> None:
         self.__config = config
     
-    def execute(self) -> subprocess.CompletedProcess:
-        return exec_shell_command(self.__backup_command())
+    def execute(self) -> None:
+        res = exec_shell_command(self.__backup_command())
+        report(res)
     
     def __backup_command(self) -> str:
         return 'rsync ${DEBUG:+-nv} -arR --files-from=%s %s %s' % (
@@ -124,14 +126,32 @@ class DbBackup:
         return self.__config.get(Config.BACKUP_DESC) + f'/{type}-dump.{type}'
 
 
+class GitBackup:
+    def __init__(self, config: Config) -> None:
+        self.__config = config
+    
+    def execute(self) -> None:
+        if not self.__config.get(Config.GIT_BACKUP):
+            return
+        
+        source_filename = self.__config(Config.GIT_BACKUP)
+        with open(source_filename) as source_file:
+            project_list = source_file.readlines()
+            print(project_list)
+        
+        for project_root in project_list:
+            command = f"cd {project_root} && git add . && git commit -m \"backup auto-commit\" && git push"
+            res = exec_shell_command(command)
+            report(res)
+
+
 def main():
     config = Config()
     config.make_today_desc_dir()
     
-    result = FileBackup(config).execute()
-    report(result)
-    
+    FileBackup(config).execute()
     DbBackup(config).execute()
+    GitBackup(config).execute()
     
 
 if __name__ == '__main__':
